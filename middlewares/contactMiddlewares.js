@@ -1,45 +1,51 @@
-const fs = require('fs').promises;
-const path = require('path');
-const {
-    AppError,
-    catchAsync,
-    postValidator,
-    putValidator,
-} = require('../utils');
+const { Types } = require('mongoose');
 
-const contactsPath = path.join('models', 'contacts.json');
+const { AppError, catchAsync, postValidator, putValidator } = require('../utils');
+const Contact = require('../models/contactModel');
 
-const checkContactById = catchAsync(async (req, res, next) => {
+exports.id = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  if (id.length > 5) return next(new AppError(400, 'Invalid Id'));
+  const isValidId = Types.ObjectId.isValid(id);
+  if (!isValidId) return next(new AppError(400, 'Invalid contact id..'));
 
-  const contactList = JSON.parse(await fs.readFile(contactsPath, 'utf8'));
-  const contact = contactList.find((contact) => contact.id === id);
-
-  if (!contact) return next(new AppError(404, 'Not Found'));
-
-  next();
-});
-
-const chekContactByPostBody = catchAsync(async (req, res, next) => {
-  const { error } = postValidator(req.body);
-  if (error) return next(new AppError(400, `missing required ${error.details[0].message}`));
+  const userExist = await Contact.exists({ _id: id });
+  if (!userExist) return next(new AppError(404, `Contact with this id:${id} does not exist..`));
 
   next();
 });
 
-const chekContactByPutBody = catchAsync(async (req, res, next) => {
- 
+exports.createBody = catchAsync(async (req, res, next) => {
+  const { error, value } = postValidator(req.body);
+    if (error) return next(new AppError(400, `missing required: ${error.details.map((err) => err.message)}`));
+    
+  const contactExist = await Contact.exists({ email: value.email });
+    if (contactExist) next(new AppError(409, 'Contact with this email already exists..'));
+    
+    req.body = value;
+    
+  next();
+});
+
+exports.updateBody = catchAsync(async (req, res, next) => {
     const { error, value } = putValidator(req.body);
+
     if (error) return next(new AppError(400, error.details[0].message));
-    if (JSON.stringify(value) === '{}') return next(new AppError(400, 'missing fields'))
-      
+
+    const userExist = await Contact.exists({ email: value.email });
+    if (userExist) next(new AppError(409, 'Contact with this email already exists..'));
+
+    req.body = value;
+
     next();
 });
 
-module.exports = {
-  checkContactById,
-  chekContactByPostBody,
-  chekContactByPutBody,
-};
+exports.status = catchAsync (async (req, res, next) => {
+    const { error, value } = putValidator(req.body);
+
+    if (error) return next(new AppError(400, error.details[0].message));
+    if (!Object.keys(value).includes('favorite')) return next(new AppError(400, 'missing field favorite'));
+    
+    next();
+})
+

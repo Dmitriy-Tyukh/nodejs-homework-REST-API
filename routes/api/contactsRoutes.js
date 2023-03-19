@@ -1,26 +1,21 @@
 const express = require('express');
-const { getContactsList, getContactsById, deleteContact, postContact, updateContact} = require('../../controllers/contactController');
-const {
-  checkContactById,
-  chekContactByPostBody,
-  chekContactByPutBody,
-} = require('../../middlewares/contactMiddlewares');
-
-// const {
-//   validatedContactOnPost,
-//   validatedContactOnPut,
-// } = require('../../utils');
+const ctrContact  = require('../../controllers/contactController');
+const checkContact = require('../../middlewares/contactMiddlewares');
 
 const router = express.Router();
 
-router.get('/', getContactsList);
+router.use('/:id', checkContact.id);
 
-router.get('/:id', checkContactById, getContactsById);
-
-router.post('/', chekContactByPostBody, postContact);
-
-router.delete('/:id', checkContactById, deleteContact);
-
-router.put('/:id', chekContactByPutBody, checkContactById, updateContact);
+router.route('/')
+  .get(ctrContact.get)
+  .post(checkContact.createBody, ctrContact.create);
+  
+router.route('/:id')
+  .get(ctrContact.getById)
+  .delete(ctrContact.delete)
+  .put(checkContact.updateBody, ctrContact.update);
+  
+router.route('/:id/favorite')
+  .patch(checkContact.id, checkContact.status, ctrContact.updateStatus);
 
 module.exports = router;
