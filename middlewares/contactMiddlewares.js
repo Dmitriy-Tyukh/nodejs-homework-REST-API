@@ -35,6 +35,8 @@ exports.updateBody = catchAsync(async (req, res, next) => {
     const userExist = await Contact.exists({ email: value.email });
     if (userExist) next(new AppError(409, 'Contact with this email already exists..'));
 
+    if (JSON.stringify(value) === '{}') return next(new AppError(400, 'missing fields'));
+    
     req.body = value;
 
     next();
