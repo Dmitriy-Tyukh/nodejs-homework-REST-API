@@ -1,8 +1,15 @@
 const Contact = require('../models/contactModel');
+const User = require('./userModel');
 
-const listContacts = async () => {
-    const contacts =  await Contact.find();
-    return contacts;
+const listContacts = async (page, limit, favorite) => {
+  const paginationPage = +page || 1;
+  const paginationLimit = +limit || 20;
+  const skip = (paginationPage - 1) * paginationLimit;
+    
+  const favoriteQuery = favorite ? {favorite: `${favorite}`} : { };
+    
+  return await Contact.find(favoriteQuery).skip(skip).limit(paginationLimit);
+
 };
 
 const getById = async (contactId) => {
@@ -24,10 +31,15 @@ const updateContact = async (contactId, fields) => {
     return updateContact;
 };
 
+const updateUserSubscription = async (id, field) => {
+  return await User.findByIdAndUpdate({ _id: id }, field, { new: true });
+};
+
 module.exports = {
   listContacts,
   getById,
   removeContact,
   addContact,
   updateContact,
+  updateUserSubscription,
 };
