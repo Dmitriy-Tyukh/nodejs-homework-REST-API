@@ -12,11 +12,13 @@ exports.singup = catchAsync(async (req, res) => {
   const newUserData = req.body;
 
     const newUser = await User.create(newUserData);
-    
+    const { email, subscription } = newUser;
+
     newUser.password = undefined;
 
     res.status(201).json({
-      user: newUser,
+      email,
+      subscription,
     });
 });
 
