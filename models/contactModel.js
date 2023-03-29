@@ -19,6 +19,11 @@ const contactSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    owner: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+      require: [true, 'Todo must have an owner ..'],
+    },
   },
   { versionKey: false, timestamps: true }
 );

@@ -1,9 +1,17 @@
 const { listContacts, getById, removeContact, addContact, updateContact } = require('../models/contacts');
 const { catchAsync } = require('../utils');
+const Contact = require('../models/contactModel')
 
 exports.get = catchAsync(async (req, res, next) => {
-    const contactsList = await listContacts();
-    res.status(200).send(contactsList);
+    const { page, limit, favorite } = req.query;
+    const contactsList = await listContacts(page, limit, favorite);
+    const total = await Contact.count();
+
+    res.status(200).json({
+      total,
+      count: contactsList.length,
+      contacts: contactsList,
+    });
 });
 
 exports.getById = catchAsync(async (req, res, next) => {

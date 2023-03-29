@@ -6,6 +6,8 @@ const dotenv = require('dotenv')
 dotenv.config({ path: './example.env' });
 
 const contactsRoutes = require('./routes/api/contactsRoutes');
+const usersRoutes = require('./routes/api/authRoutes')
+
 const formatLogger = process.env.NODE_ENV === 'development' ? 'dev' : 'short';
 
 const app = express();
@@ -13,7 +15,9 @@ const app = express();
 app.use(morgan(formatLogger));
 app.use(cors());
 app.use(express.json());
+
 app.use('/api/contacts', contactsRoutes);
+app.use('/api/users', usersRoutes)
 
 app.all('*', (req, res) => {
   res.status(404).json({ message: 'Resource Not found' });
