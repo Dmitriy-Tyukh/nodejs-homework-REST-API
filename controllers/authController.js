@@ -1,24 +1,25 @@
 const jwt = require('jsonwebtoken');
-const { updateUserSubscription } = require('../models/contacts');
 const User = require('../models/userModel');
 const { catchAsync, AppError } = require('../utils');
+
 
 // sing Token
 const singToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-exports.singup = catchAsync(async (req, res) => {
-  const newUserData = req.body;
-
+exports.signup = catchAsync(async (req, res) => {
+    const newUserData = req.body;
+ 
     const newUser = await User.create(newUserData);
-    const { email, subscription } = newUser;
+   
+    const { email, subscription, avatarURL } = newUser;
 
     newUser.password = undefined;
-
     res.status(201).json({
       email,
       subscription,
+      avatarURL,
     });
 });
 
@@ -52,24 +53,3 @@ exports.logout = catchAsync(async (req, res, next) => {
     res.sendStatus(204);
 })
 
-exports.currentUser = catchAsync(async (req, res, next)=> {
-    const {email, subscription} = req.user;
-    
-    res.status(200).json({
-      email,
-      subscription,
-    });
-})
-
-exports.updateSubscription = catchAsync(async (req, res, next) => {
-    const { id } = req.user;
-    
-    const updatedUser = await updateUserSubscription( id, { subscription: req.body.subscription }, { new: true });
-    const { email, subscription } = updatedUser;
-    
-    res.status(200).json({
-      email,
-      subscription,
-    });
-  }
-)

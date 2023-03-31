@@ -15,6 +15,7 @@ const app = express();
 app.use(morgan(formatLogger));
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
 
 app.use('/api/contacts', contactsRoutes);
 app.use('/api/users', usersRoutes)
