@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-
 const userSchema = new mongoose.Schema(
   {
     password: {
@@ -22,6 +21,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    avatarURL: {
+        type: String,
+        required: true,
+    },
   },
   {
     versionKey: false, // прибирає - _v.
@@ -30,17 +33,18 @@ const userSchema = new mongoose.Schema(
 );
 
 // TODO: Pre save - hook
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, salt);
 
   next();
 });
 
- // TODO: перевірка пароля чи валідний чи cпівпадає пароль з закешованим паролем;
-userSchema.methods.checkPassword = (candidate, hash) => bcrypt.compare(candidate, hash);
+// TODO: перевірка пароля чи валідний чи cпівпадає пароль з закешованим паролем;
+userSchema.methods.checkPassword = (candidate, hash) =>
+  bcrypt.compare(candidate, hash);
 
 const User = mongoose.model('User', userSchema);
 

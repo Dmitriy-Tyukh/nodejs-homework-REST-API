@@ -1,23 +1,28 @@
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
 const User = require('../models/userModel');
-const { catchAsync, singupUserValidator, AppError, userSubscriptionValidator } = require('../utils');
+const { catchAsync, loginUserValidator, singupUserValidator, AppError, userSubscriptionValidator } = require('../utils');
 
 
 exports.checkSingupData = catchAsync(async (req, res, next) => {
-
-  const { error, value } = singupUserValidator(req.body);
+    const { email, password } = req.body;
+    
+    const avatarHash = gravatar.url(email);
+    const avatarURL = `${avatarHash}?d=wavatar`;
+  
+  const { error, value } = singupUserValidator({ email, password, avatarURL });
   if (error) return next( new AppError( 400, error.details.map((err) => err.message)));
 
   const userExist = await User.exists({ email: value.email });
   if (userExist) next(new AppError(409, 'Email in use'));
 
   req.body = value;
-
+console.log(value)
   next();
 });
 
 exports.checkLoginData = catchAsync(async (req, res, next) => {
-    const { error } = singupUserValidator(req.body);
+    const { error } = loginUserValidator(req.body);
     if (error) return next(new AppError(400, error.details.map((err) => err.message)));
     next();
 })
