@@ -51,5 +51,6 @@ exports.subscription = catchAsync(async (req, res, next) => {
     const { error, value } = userSubscriptionValidator(req.body);
     if (error) return next(new AppError(400, `Missing required ${error.details[0].message} field!`));
     req.body = value;
-  next()
-})
+    next()
+});
+
