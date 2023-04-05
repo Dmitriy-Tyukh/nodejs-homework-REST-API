@@ -1,9 +1,11 @@
-const { updateUserSubscription } = require("../models/contacts");
-const { catchAsync, AppError } = require("../utils");
-const User = require('../models/userModel');
-const path = require('path');
-const fs = require('fs/promises');
 const Jimp = require('jimp');
+const fs = require('fs/promises');
+const path = require('path');
+const { updateUserSubscription } = require("../models/contacts");
+const User = require('../models/userModel');
+const { catchAsync, AppError } = require("../utils");
+const { sendEmail } = require('../utils')
+
 
 exports.currentUser = catchAsync(async (req, res, next) => {
   const { email, subscription } = req.user;
@@ -56,3 +58,42 @@ exports.updateAvatar = catchAsync(async (req, res, next) => {
     return next(new AppError(401, 'Not authorized'));
   }
 });
+
+exports.verifyToken = catchAsync(async (req, res, next) => {
+    const { verificationToken } = req.params;
+
+    const user = await User.findOne({ verificationToken });
+    if (!user) return next(new AppError(404, "Not found"))
+
+    await User.findByIdAndUpdate(user._id, {
+        verify: true,
+        verificationToken: null,
+    });
+
+    res.status(200).json({
+        message: 'Verification successful',
+    });
+});
+
+exports.resendingEmail = catchAsync(async (req, res, next) => {
+    const { email } = req.body;
+    
+    if (!email) return next(new AppError(400, 'missing required field email'));
+   
+    const user = await User.findOne({ email });
+    if(!user) return next(new AppError(404, 'User not found, please signup'));
+    
+    if (user.verify) return next(new AppError(400, 'Verification has already been passed'));
+
+    const mail = {
+      to: email,
+      subject: 'Проверка Email',
+      html: `<a target="_blank" href="http://localhost:8080/api/users/verify/${user.verificationToken}"> Подтвердить Email </a>`,
+    };
+
+    await sendEmail(mail);
+
+    res.status(200).json({
+      mesaage: 'Verification email sent',
+    });
+})

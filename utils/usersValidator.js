@@ -2,8 +2,7 @@ const Joi = require("joi");
 
 const PASSWD_REGEX = /(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z!@#$%^&*]{6,12}/;
 
-exports.singupUserValidator = (data) =>
-  Joi.object()
+exports.singupUserValidator = (data) => Joi.object()
     .options({ abortEarly: false })
     .keys({
       email: Joi.string().email().required(),
@@ -11,19 +10,24 @@ exports.singupUserValidator = (data) =>
       avatarURL: Joi.string().required(),
     })
     .validate(data);
-
-exports.loginUserValidator = (data) =>
-  Joi.object()
+    
+exports.loginUserValidator = (data) => Joi.object()
     .options({ abortEarly: false })
     .keys({
-      email: Joi.string().email().required(),
-      password: Joi.string().regex(PASSWD_REGEX).required(),
+        email: Joi.string().email().required(),
+        password: Joi.string().regex(PASSWD_REGEX).required(),
     })
     .validate(data);
-
-
+    
 exports.userSubscriptionValidator = (data) => Joi.object()
     .options({abortEarly: false })
     .keys({
-      subscription: Joi.string().valid("starter", "pro", "business")
+        subscription: Joi.string().valid("starter", "pro", "business")
     }).validate(data);
+
+exports.verifyEmailValidator = (data) => Joi.object()
+    .options({ abortEarly: false })
+    .keys({
+      email: Joi.string().email().required(),
+    })
+    .validate(data);

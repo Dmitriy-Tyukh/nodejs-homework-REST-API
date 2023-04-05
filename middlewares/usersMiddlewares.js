@@ -1,5 +1,7 @@
 const multer = require('multer');
 const path = require('path');
+const {verifyEmailValidator, AppError } = require('../utils');
+
 
 const tempDir = path.join(__dirname, '../', 'temp');
 
@@ -19,4 +21,14 @@ const upload = multer({
   storage: multerConfig,
 });
 
-module.exports = upload;
+const checkEmail = async (req, res, next) => {
+    const { error } = verifyEmailValidator(res.body);
+    if (error) return next(new AppError(400, 'missing required field email'));
+    next();
+};
+
+
+module.exports = {
+  upload,
+  checkEmail,
+};
